@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const interFont = Inter({
   subsets: ["vietnamese"],
@@ -28,6 +29,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
+          <Toaster />
           {children}
         </ThemeProvider>
       </body>
