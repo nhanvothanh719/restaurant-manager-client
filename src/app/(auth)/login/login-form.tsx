@@ -31,10 +31,10 @@ export default function LoginForm() {
         `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
         {
           method: "POST",
-          body: JSON.stringify(values),
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(values),
         }
       ).then(async (res) => {
         const payload = await res.json();
@@ -50,6 +50,25 @@ export default function LoginForm() {
       });
 
       toast.success(`${result.payload.message}`);
+
+      const resultFromNextServer = await fetch("/api/auth/set-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(result),
+      }).then(async (res) => {
+        const payload = await res.json();
+        const data = {
+          status: res.status,
+          payload,
+        };
+        if (!res.ok) {
+          // MEMO: This error will be caught in `catch` block
+          throw data;
+        }
+        return data;
+      });
     } catch (err: any) {
       console.error(err);
 
