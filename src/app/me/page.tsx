@@ -26,8 +26,6 @@ export default async function CurrentUserProfilePage() {
     return data;
   });
 
-  console.log(">>> Result: ", result);
-
   return (
     <div>
       <ul>
