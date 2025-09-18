@@ -12,7 +12,10 @@ class HttpError extends Error {
   }
 }
 
-type CustomOptions = RequestInit & { baseUrl?: string | undefined };
+// Remove method; Add baseUrl
+type CustomOptions = Omit<RequestInit, "method"> & {
+  baseUrl?: string | undefined;
+};
 
 const request = async <Response>(
   method: "GET" | "POST" | "PUT" | "DELETE",
