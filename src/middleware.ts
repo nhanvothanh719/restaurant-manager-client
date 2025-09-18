@@ -9,14 +9,21 @@ export function middleware(request: NextRequest) {
 
   // Users who have not logged in cannot access private path
   if (
-    PRIVATE_PATHS.some((path) => pathname.startsWith(path)) &&
+    PRIVATE_PATHS.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`)
+    ) &&
     !sessionToken
   ) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Users who have already logged in cannot access to '/login' or '/register' page
-  if (AUTH_PATHS.some((path) => pathname.startsWith(path)) && sessionToken) {
+  if (
+    AUTH_PATHS.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`)
+    ) &&
+    sessionToken
+  ) {
     return NextResponse.redirect(new URL("/me", request.url));
   }
 
