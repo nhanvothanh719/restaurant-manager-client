@@ -8,6 +8,7 @@ const accountApiRequest = {
         Authorization: `Bearer ${sessionToken}`,
       },
     }),
+  getMeOnClient: () => http.get<AccountResType>("/account/me"),
 };
 
 export default accountApiRequest;

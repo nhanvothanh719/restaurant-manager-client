@@ -1,3 +1,4 @@
+import { LoginResType } from "@/app/schemaValidations/auth.schema";
 import { clientEnvConfigData } from "@/config";
 
 class HttpError extends Error {
@@ -26,6 +27,9 @@ const request = async <Response>(
           "Content-Type": "application/json",
         }
       : {};
+  baseHeaders.Authorization = clientSessionToken.value
+    ? `Bearer ${clientSessionToken.value}`
+    : "";
 
   // MEMO: Set url of the BE server as the default base url
   // MEMO: `options.baseUrl = ''` means call to the Next.js server
@@ -56,6 +60,14 @@ const request = async <Response>(
 
   if (!res.ok) {
     throw new HttpError(data);
+  }
+
+  if (["/auth/login", "/auth/register"].includes(url)) {
+    // Set value for clientSessionToken when logging in or registering
+    clientSessionToken.value = (payload as LoginResType).data.token;
+  } else if ("/auth/logout".includes(url)) {
+    // Delete clientSessionToken value when logging out
+    clientSessionToken.value = "";
   }
 
   return data;
@@ -89,4 +101,24 @@ const http = {
     return request<Response>("DELETE", url, options);
   },
 };
+
 export default http;
+
+class SessionToken {
+  private token = "";
+
+  // Getter
+  get value() {
+    return this.token;
+  }
+
+  // Setter
+  set value(token: string) {
+    if (typeof window === undefined) {
+      // Throw error if this method is called by server component
+      throw new Error("Session token cannot be set on server side");
+    }
+    this.token = token;
+  }
+}
+export const clientSessionToken = new SessionToken();

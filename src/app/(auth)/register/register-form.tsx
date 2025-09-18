@@ -1,6 +1,5 @@
 "use client";
 import authApiRequest from "@/apiRequest/auth";
-import { useAppContext } from "@/app/AppProvider";
 import {
   RegisterBody,
   RegisterBodyType,
@@ -23,7 +22,6 @@ import { toast } from "sonner";
 
 export default function RegisterForm() {
   const router = useRouter();
-  const { setSessionToken } = useAppContext();
 
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
@@ -44,9 +42,6 @@ export default function RegisterForm() {
       await authApiRequest.setSession({
         sessionToken: result.payload.data.token,
       });
-
-      // Set sessionToken to Context API (for using in client component)
-      setSessionToken(result.payload.data.token);
       router.push("/me");
     } catch (err: any) {
       console.error(err);
