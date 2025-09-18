@@ -1,9 +1,12 @@
 import { LoginResType } from "@/app/schemaValidations/auth.schema";
 import { clientEnvConfigData } from "@/config";
 
-class HttpError extends Error {
+export class HttpError extends Error {
   status: number;
-  payload: any;
+  payload: {
+    message: string;
+    [key: string]: any;
+  };
 
   constructor({ status, payload }: { status: number; payload: any }) {
     super("HTTP Error"); // MEMO: error.message
@@ -62,7 +65,13 @@ const request = async <Response>(
   };
 
   if (!res.ok) {
-    throw new HttpError(data);
+    if (res.status === UNPROCESSABLE_ENTITY_STATUS) {
+      throw new UnprocessableEntityError(
+        data as { status: 422; payload: UnprocessableEntityErrorPayload }
+      );
+    } else {
+      throw new HttpError(data);
+    }
   }
 
   if (["/auth/login", "/auth/register"].includes(url)) {
@@ -125,3 +134,29 @@ class SessionToken {
   }
 }
 export const clientSessionToken = new SessionToken();
+
+const UNPROCESSABLE_ENTITY_STATUS = 422;
+
+type UnprocessableEntityErrorPayload = {
+  message: string;
+  errors: {
+    field: string;
+    message: string;
+  }[];
+};
+
+export class UnprocessableEntityError extends HttpError {
+  status: 422;
+  payload: UnprocessableEntityErrorPayload;
+  constructor({
+    status,
+    payload,
+  }: {
+    status: 422;
+    payload: UnprocessableEntityErrorPayload;
+  }) {
+    super({ status, payload });
+    this.status = status;
+    this.payload = payload;
+  }
+}

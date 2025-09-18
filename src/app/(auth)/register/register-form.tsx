@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { handleApiError } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -43,24 +44,8 @@ export default function RegisterForm() {
         sessionToken: result.payload.data.token,
       });
       router.push("/me");
-    } catch (err: any) {
-      console.error(err);
-
-      const errors = err.payload.errors as {
-        field: string;
-        message: string;
-      }[];
-      const status = err.status as number;
-      if (status === 422) {
-        errors.forEach((error) => {
-          form.setError(error.field as "email" | "password", {
-            type: "server",
-            message: error.message,
-          });
-        });
-      } else {
-        toast.error(`${err.payload.message}`);
-      }
+    } catch (error: any) {
+      handleApiError({ error, setError: form.setError });
     }
   };
 
