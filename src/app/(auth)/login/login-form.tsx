@@ -14,12 +14,13 @@ import { Input } from "@/components/ui/input";
 import { handleApiError } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function LoginForm() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -30,6 +31,8 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (values: LoginBodyType) => {
+    if (loading) return;
+    setLoading(true);
     try {
       const result = await authApiRequest.login(values);
       toast.success(`${result.payload.message}`);
@@ -42,6 +45,8 @@ export default function LoginForm() {
       router.push("/me");
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,7 +87,7 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="!mt-5 w-full">
+        <Button type="submit" className="!mt-5 w-full" disabled={loading}>
           Login
         </Button>
       </form>

@@ -17,12 +17,13 @@ import { Input } from "@/components/ui/input";
 import { handleApiError } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function RegisterForm() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
@@ -35,6 +36,8 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterBodyType) => {
+    if (loading) return
+    setLoading(true);
     try {
       const result = await authApiRequest.register(values);
       toast.success(`${result.payload.message}`);
@@ -46,6 +49,8 @@ export default function RegisterForm() {
       router.push("/me");
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,7 +117,7 @@ export default function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="!mt-5 w-full">
+        <Button type="submit" className="!mt-5 w-full" disabled={loading}>
           Register
         </Button>
       </form>
