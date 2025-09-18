@@ -26,8 +26,6 @@ export default function Profile() {
         }
         return data;
       });
-
-      console.log(">>> Fetch from client component: ", result);
     };
     fetchRequest();
   }, [sessionToken]);
