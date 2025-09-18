@@ -54,6 +54,7 @@ export default function LoginForm() {
 
       toast.success(`${result.payload.message}`);
 
+      // Call Next server API to set sessionToken cookie (for using in server component)
       const resultFromNextServer = await fetch("/api/auth/set-session", {
         method: "POST",
         headers: {
@@ -73,6 +74,7 @@ export default function LoginForm() {
         return data;
       });
 
+      // Set sessionToken to Context API (for using in client component)
       setSessionToken(resultFromNextServer.payload.data.token);
     } catch (err: any) {
       console.error(err);
