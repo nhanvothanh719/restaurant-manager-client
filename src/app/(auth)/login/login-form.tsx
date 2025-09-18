@@ -1,4 +1,5 @@
 "use client";
+import { useAppContext } from "@/app/AppProvider";
 import { LoginBody, LoginBodyType } from "@/app/schemaValidations/auth.schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,8 @@ import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function LoginForm() {
+  const { setSessionToken } = useAppContext();
+
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -69,6 +72,8 @@ export default function LoginForm() {
         }
         return data;
       });
+
+      setSessionToken(resultFromNextServer.payload.data.token);
     } catch (err: any) {
       console.error(err);
 

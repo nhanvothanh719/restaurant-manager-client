@@ -1,3 +1,4 @@
+import Profile from "@/app/me/profile";
 import { clientEnvConfigData } from "@/config";
 import { cookies } from "next/headers";
 import React from "react";
@@ -36,6 +37,7 @@ export default async function CurrentUserProfilePage() {
           <p>Name: {result.payload.data.name}</p>
         </li>
       </ul>
+      <Profile />
     </div>
   );
 }

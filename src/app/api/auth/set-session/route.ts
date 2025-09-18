@@ -8,12 +8,13 @@ export async function POST(request: Request) {
   }
 
   // MEMO: Nếu không set ``Path=/` thì thuộc tính path của cookie sẽ là `/api`
+  // MEMO: HttpOnly để client không thể dùng JS lấy được giá trị cookie
   return Response.json(
-    { res },
+    res.payload,
     {
       status: 200,
       headers: {
-        "Set-Cookie": `sessionToken=${sessionToken}; Path=/`,
+        "Set-Cookie": `sessionToken=${sessionToken}; Path=/; HttpOnly`,
       },
     }
   );
