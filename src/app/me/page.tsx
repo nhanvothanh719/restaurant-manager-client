@@ -1,5 +1,5 @@
+import accountApiRequest from "@/apiRequest/account";
 import Profile from "@/app/me/profile";
-import { clientEnvConfigData } from "@/config";
 import { cookies } from "next/headers";
 import React from "react";
 
@@ -8,28 +8,7 @@ export default async function CurrentUserProfilePage() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken");
 
-  const result = await fetch(
-    `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/account/me`,
-    {
-      headers: {
-        // MEMO: TH server BE check Authorization trong header
-        Authorization: `Bearer ${sessionToken?.value}`,
-        // MEMO: TH server BE check cookie `sessionToken` trong header
-        // Cookies: `sessionToken=${sessionToken}`,
-      },
-    }
-  ).then(async (res) => {
-    const payload = await res.json();
-    const data = {
-      status: res.status,
-      payload,
-    };
-    if (!res.ok) {
-      throw data;
-    }
-    return data;
-  });
-
+  const result = await accountApiRequest.getMe(sessionToken?.value || "");
   return (
     <div>
       <ul>

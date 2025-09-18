@@ -1,4 +1,6 @@
 "use client";
+import authApiRequest from "@/apiRequest/auth";
+import { useAppContext } from "@/app/AppProvider";
 import {
   RegisterBody,
   RegisterBodyType,
@@ -13,12 +15,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clientEnvConfigData } from "@/config";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { FieldErrors, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function RegisterForm() {
+  const router = useRouter();
+  const { setSessionToken } = useAppContext();
+
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
@@ -30,17 +36,37 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterBodyType) => {
-    const result = await fetch(
-      `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/auth/register`,
-      {
-        method: "POST",
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      const result = await authApiRequest.register(values);
+      toast.success(`${result.payload.message}`);
+
+      // Call Next server API to set sessionToken cookie (for using in server component)
+      await authApiRequest.setSession({
+        sessionToken: result.payload.data.token,
+      });
+
+      // Set sessionToken to Context API (for using in client component)
+      setSessionToken(result.payload.data.token);
+      router.push("/me");
+    } catch (err: any) {
+      console.error(err);
+
+      const errors = err.payload.errors as {
+        field: string;
+        message: string;
+      }[];
+      const status = err.status as number;
+      if (status === 422) {
+        errors.forEach((error) => {
+          form.setError(error.field as "email" | "password", {
+            type: "server",
+            message: error.message,
+          });
+        });
+      } else {
+        toast.error(`${err.payload.message}`);
       }
-    ).then((res) => res.json());
-    console.log(">>> Result: ", result);
+    }
   };
 
   const onSubmitError = (error: FieldErrors) => {

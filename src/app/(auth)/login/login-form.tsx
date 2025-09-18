@@ -1,4 +1,5 @@
 "use client";
+import authApiRequest from "@/apiRequest/auth";
 import { useAppContext } from "@/app/AppProvider";
 import { LoginBody, LoginBodyType } from "@/app/schemaValidations/auth.schema";
 import { Button } from "@/components/ui/button";
@@ -11,13 +12,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clientEnvConfigData } from "@/config";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function LoginForm() {
+  const router = useRouter();
   const { setSessionToken } = useAppContext();
 
   const form = useForm<LoginBodyType>({
@@ -30,52 +32,17 @@ export default function LoginForm() {
 
   const onSubmit = async (values: LoginBodyType) => {
     try {
-      const result = await fetch(
-        `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        }
-      ).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          status: res.status,
-          payload,
-        };
-        if (!res.ok) {
-          // MEMO: This error will be caught in `catch` block
-          throw data;
-        }
-        return data;
-      });
-
+      const result = await authApiRequest.login(values);
       toast.success(`${result.payload.message}`);
 
       // Call Next server API to set sessionToken cookie (for using in server component)
-      const resultFromNextServer = await fetch("/api/auth/set-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(result),
-      }).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          status: res.status,
-          payload,
-        };
-        if (!res.ok) {
-          // MEMO: This error will be caught in `catch` block
-          throw data;
-        }
-        return data;
+      await authApiRequest.setSession({
+        sessionToken: result.payload.data.token,
       });
 
       // Set sessionToken to Context API (for using in client component)
-      setSessionToken(resultFromNextServer.payload.data.token);
+      setSessionToken(result.payload.data.token);
+      router.push("/me");
     } catch (err: any) {
       console.error(err);
 
