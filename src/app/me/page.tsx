@@ -12,7 +12,10 @@ export default async function CurrentUserProfilePage() {
     `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/account/me`,
     {
       headers: {
+        // MEMO: TH server BE check Authorization trong header
         Authorization: `Bearer ${sessionToken?.value}`,
+        // MEMO: TH server BE check cookie `sessionToken` trong header
+        // Cookies: `sessionToken=${sessionToken}`,
       },
     }
   ).then(async (res) => {
