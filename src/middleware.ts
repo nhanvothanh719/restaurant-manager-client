@@ -32,5 +32,5 @@ export function middleware(request: NextRequest) {
 
 // All routes that this middleware applies
 export const config = {
-  matcher: [...PRIVATE_PATHS, ...AUTH_PATHS],
+  matcher: ["/login", "/register", "/me"],
 };
