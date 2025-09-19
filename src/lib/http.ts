@@ -1,6 +1,21 @@
 import { LoginResType } from "@/app/schemaValidations/auth.schema";
 import { clientEnvConfigData } from "@/config";
-import { normalizePath } from "@/lib/utils";
+import { isClientComponent, normalizePath } from "@/lib/utils";
+
+const UNPROCESSABLE_ENTITY_STATUS = 422;
+
+type UnprocessableEntityErrorPayload = {
+  message: string;
+  errors: {
+    field: string;
+    message: string;
+  }[];
+};
+
+// Remove method; Add baseUrl
+type CustomOptions = Omit<RequestInit, "method"> & {
+  baseUrl?: string | undefined;
+};
 
 export class HttpError extends Error {
   status: number;
@@ -15,11 +30,6 @@ export class HttpError extends Error {
     this.payload = payload;
   }
 }
-
-// Remove method; Add baseUrl
-type CustomOptions = Omit<RequestInit, "method"> & {
-  baseUrl?: string | undefined;
-};
 
 const request = async <Response>(
   method: "GET" | "POST" | "PUT" | "DELETE",
@@ -75,8 +85,7 @@ const request = async <Response>(
     }
   }
 
-  if (typeof window !== undefined) {
-    // This logic is only applied to client component
+  if (isClientComponent()) {
     if (
       ["auth/login", "auth/register"].some(
         (item) => item === normalizePath(url)
@@ -134,7 +143,7 @@ class SessionToken {
 
   // Setter
   set value(token: string) {
-    if (typeof window === undefined) {
+    if (!isClientComponent()) {
       // Throw error if this method is called by server component
       throw new Error("Session token cannot be set on server side");
     }
@@ -142,16 +151,6 @@ class SessionToken {
   }
 }
 export const clientSessionToken = new SessionToken();
-
-const UNPROCESSABLE_ENTITY_STATUS = 422;
-
-type UnprocessableEntityErrorPayload = {
-  message: string;
-  errors: {
-    field: string;
-    message: string;
-  }[];
-};
 
 export class UnprocessableEntityError extends HttpError {
   status: 422;

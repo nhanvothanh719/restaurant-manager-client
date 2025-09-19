@@ -32,10 +32,16 @@ export const handleApiError = ({
 };
 
 /**
- * 
- * @param path 
+ *
+ * @param path
  * Ex: `/login` -> `login`
  */
 export const normalizePath = (path: string): string => {
   return path.startsWith("/") ? path.slice(1) : path;
 };
+
+/**
+ * Determines if this logic is executed on client component
+ * @returns
+ */
+export const isClientComponent = () => typeof window !== "undefined";

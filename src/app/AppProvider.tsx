@@ -1,5 +1,6 @@
 "use client";
 import { clientSessionToken } from "@/lib/http";
+import { isClientComponent } from "@/lib/utils";
 import { ReactNode, useLayoutEffect } from "react";
 
 export default function AppProvider({
@@ -11,7 +12,7 @@ export default function AppProvider({
 }) {
   useLayoutEffect(() => {
     // MEMO: Only reassigning value in client component
-    if (typeof window !== undefined) {
+    if (isClientComponent()) {
       clientSessionToken.value = initialSessionToken;
     }
   }, [initialSessionToken]);
