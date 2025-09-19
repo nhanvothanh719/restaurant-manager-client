@@ -30,3 +30,12 @@ export const handleApiError = ({
     toast.error(`${error.payload.message}`, { duration: toastDuration });
   }
 };
+
+/**
+ * 
+ * @param path 
+ * Ex: `/login` -> `login`
+ */
+export const normalizePath = (path: string): string => {
+  return path.startsWith("/") ? path.slice(1) : path;
+};

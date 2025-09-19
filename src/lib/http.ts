@@ -1,5 +1,6 @@
 import { LoginResType } from "@/app/schemaValidations/auth.schema";
 import { clientEnvConfigData } from "@/config";
+import { normalizePath } from "@/lib/utils";
 
 export class HttpError extends Error {
   status: number;
@@ -74,12 +75,19 @@ const request = async <Response>(
     }
   }
 
-  if (["/auth/login", "/auth/register"].includes(url)) {
-    // Set value for clientSessionToken when logging in or registering
-    clientSessionToken.value = (payload as LoginResType).data.token;
-  } else if ("/auth/logout".includes(url)) {
-    // Delete clientSessionToken value when logging out
-    clientSessionToken.value = "";
+  if (typeof window !== undefined) {
+    // This logic is only applied to client component
+    if (
+      ["auth/login", "auth/register"].some(
+        (item) => item === normalizePath(url)
+      )
+    ) {
+      // Set value for clientSessionToken when logging in or registering
+      clientSessionToken.value = (payload as LoginResType).data.token;
+    } else if (normalizePath(url) === "auth/logout") {
+      // Delete clientSessionToken value when logging out
+      clientSessionToken.value = "";
+    }
   }
 
   return data;
