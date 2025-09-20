@@ -4,6 +4,24 @@ import { cookies } from "next/headers";
 
 // POST: /api/auth/set-session
 export async function POST(request: Request) {
+  const req = await request.json();
+  // Determine if force to logout
+  const force = req.force as boolean | undefined;
+  if (force) {
+    return Response.json(
+      {
+        message: "Force to logout successfully",
+      },
+      {
+        status: 200,
+        headers: {
+          // Delete `sessionToken` cookie in server component
+          "Set-Cookie": `sessionToken=; Path=/; HttpOnly; Max-Age=0`,
+        },
+      }
+    );
+  }
+
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken")?.value;
   if (!sessionToken) {
@@ -15,9 +33,11 @@ export async function POST(request: Request) {
       sessionToken
     );
 
+    // Delete `sessionToken` cookie
     return Response.json(result.payload, {
       status: 200,
       headers: {
+        // Delete `sessionToken` cookie in server component
         "Set-Cookie": `sessionToken=; Path=/; HttpOnly; Max-Age=0`,
       },
     });

@@ -19,7 +19,7 @@ export default async function CurrentUserProfilePage() {
           <p>Name: {result.payload.data.name}</p>
         </li>
       </ul>
-      <Profile />
+      {/* <Profile /> */}
     </div>
   );
 }

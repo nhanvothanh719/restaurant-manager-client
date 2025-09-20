@@ -1,8 +1,10 @@
 import { LoginResType } from "@/app/schemaValidations/auth.schema";
 import { clientEnvConfigData } from "@/config";
 import { isClientComponent, normalizePath } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const UNPROCESSABLE_ENTITY_STATUS = 422;
+const AUTHENTICATION_ERROR_STATUS = 401;
 
 type UnprocessableEntityErrorPayload = {
   message: string;
@@ -80,6 +82,29 @@ const request = async <Response>(
       throw new UnprocessableEntityError(
         data as { status: 422; payload: UnprocessableEntityErrorPayload }
       );
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+      if (isClientComponent()) {
+        // Xử lý cho client component
+        // Delete `sessionToken` cookie in Next server
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          body: JSON.stringify({ force: true }),
+          headers: {
+            ...baseHeaders,
+          },
+        });
+        // Delete `sessionToken` value in Next client
+        clientSessionToken.value = "";
+        // Full-reload page
+        location.href = "/login";
+      } else {
+        // Xử lý cho server component
+        // Bởi vì từ server component muốn gọi được BE server thì cần truyền Authorization vào header'
+        const sessionToken = (options?.headers as any).Authorization.split(
+          " "
+        )[1];
+        redirect(`/logout?sessionToken=${sessionToken}`);
+      }
     } else {
       throw new HttpError(data);
     }

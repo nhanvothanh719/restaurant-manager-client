@@ -27,14 +27,19 @@ const authApiRequest = {
     http.post("/api/auth/set-session", body, {
       baseUrl: "",
     }),
-  logoutFromNextClientToNextServer: () =>
-    http.post<MessageResType>(
+  logoutFromNextClientToNextServer: (
+    force: boolean | undefined = undefined
+  ) => {
+    return http.post<MessageResType>(
       "/api/auth/logout",
-      {},
+      {
+        force,
+      },
       {
         baseUrl: "",
       }
-    ),
+    );
+  },
 };
 
 export default authApiRequest;
