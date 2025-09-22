@@ -1,4 +1,5 @@
 import productApiRequest from "@/apiRequest/product";
+import DeleteButton from "@/app/products/_components/delete-button";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,9 +33,7 @@ export default async function ProductsPage() {
                   Edit
                 </Button>
               </Link>
-              <Button type="button" variant={"destructive"}>
-                Delete
-              </Button>
+              <DeleteButton product={product} />
             </div>
           </div>
         ))}
