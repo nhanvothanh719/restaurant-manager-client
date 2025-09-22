@@ -1,4 +1,5 @@
 import productApiRequest from "@/apiRequest/product";
+import ProductAddForm from "@/app/products/_components/product-add-form";
 import React from "react";
 
 export default async function ProductDetailsPage({
@@ -8,9 +9,10 @@ export default async function ProductDetailsPage({
     id: string;
   };
 }) {
-  let product = null;
+  let product = undefined;
   try {
-    const { payload } = await productApiRequest.getDetails(Number(params.id));
+    const { id } = await params;
+    const { payload } = await productApiRequest.getDetails(Number(id));
     product = payload.data;
   } catch (error) {
     console.error(error);
@@ -24,5 +26,10 @@ export default async function ProductDetailsPage({
     );
   }
 
-  return <div>{product.name}</div>;
+  return (
+    <div>
+      <h3>{product.name}</h3>
+      <ProductAddForm product={product} />
+    </div>
+  );
 }
