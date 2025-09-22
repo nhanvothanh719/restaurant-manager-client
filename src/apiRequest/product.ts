@@ -7,6 +7,7 @@ import http from "@/lib/http";
 
 const productApiRequest = {
   getList: () => http.get<ProductListResType>("/products"),
+  getDetails: (id: number) => http.get<ProductResType>(`/products/${id}`),
   create: (body: CreateProductBodyType) =>
     http.post<ProductResType>("/products", body),
   uploadImage: (body: FormData) =>

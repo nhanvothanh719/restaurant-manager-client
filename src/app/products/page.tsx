@@ -1,6 +1,7 @@
 import productApiRequest from "@/apiRequest/product";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 export default async function ProductsPage() {
@@ -8,6 +9,11 @@ export default async function ProductsPage() {
   const productsList = payload.data;
   return (
     <div>
+      <Link href={"/products/add"}>
+        <Button type="button" variant={"secondary"}>
+          Add product
+        </Button>
+      </Link>
       <h3>Products List</h3>
       <div className="space-y-5">
         {productsList.map((product) => (
@@ -21,9 +27,11 @@ export default async function ProductsPage() {
             <p>{product.name}</p>
             <p>${product.price}</p>
             <div className="flex space-x-2">
-              <Button type="button" variant={"secondary"}>
-                Edit
-              </Button>
+              <Link href={`/products/${product.id}`}>
+                <Button type="button" variant={"link"}>
+                  Edit
+                </Button>
+              </Link>
               <Button type="button" variant={"destructive"}>
                 Delete
               </Button>
