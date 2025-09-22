@@ -1,6 +1,7 @@
 import authApiRequest from "@/apiRequest/auth";
 import { HttpError } from "@/lib/http";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 // POST: /api/auth/slide-session
 export async function POST(request: Request) {
@@ -15,14 +16,19 @@ export async function POST(request: Request) {
     const res = await authApiRequest.slideSessionFromNextServerToBackendServer(
       sessionToken?.value
     );
-    const newExpiresAt = new Date(res.payload.data.expiresAt).toUTCString();
+    const newExpiresAt = new Date(res.payload.data.expiresAt);
 
-    return Response.json(res.payload, {
-      status: 200,
-      headers: {
-        "Set-Cookie": `sessionToken=${sessionToken.value}; Path=/; HttpOnly; Expires=${newExpiresAt}; SameSite=Lax; Secure`,
-      },
+    const response = NextResponse.json(res.payload, { status: 200 });
+    response.cookies.set({
+      name: "sessionToken",
+      value: sessionToken.value,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+      expires: newExpiresAt,
     });
+    return response;
   } catch (error) {
     if (error instanceof HttpError) {
       return Response.json(error.payload, {

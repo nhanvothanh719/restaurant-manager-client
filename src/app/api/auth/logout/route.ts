@@ -1,6 +1,7 @@
 import authApiRequest from "@/apiRequest/auth";
 import { HttpError } from "@/lib/http";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 // POST: /api/auth/set-session
 export async function POST(request: Request) {
@@ -8,18 +9,20 @@ export async function POST(request: Request) {
   // Determine if force to logout
   const force = req.force as boolean | undefined;
   if (force) {
-    return Response.json(
+    const response = NextResponse.json(
       {
         message: "Force to logout successfully",
       },
-      {
-        status: 200,
-        headers: {
-          // Delete `sessionToken` cookie in server component
-          "Set-Cookie": `sessionToken=; Path=/; HttpOnly; Max-Age=0`,
-        },
-      }
+      { status: 200 }
     );
+    response.cookies.set({
+      name: "sessionToken",
+      value: "",
+      path: "/",
+      httpOnly: true,
+      maxAge: 0,
+    });
+    return response;
   }
 
   const cookieStore = await cookies();
@@ -34,13 +37,15 @@ export async function POST(request: Request) {
     );
 
     // Delete `sessionToken` cookie
-    return Response.json(result.payload, {
-      status: 200,
-      headers: {
-        // Delete `sessionToken` cookie in server component
-        "Set-Cookie": `sessionToken=; Path=/; HttpOnly; Max-Age=0`,
-      },
+    const response = NextResponse.json(result.payload, { status: 200 });
+    response.cookies.set({
+      name: "sessionToken",
+      value: "",
+      path: "/",
+      httpOnly: true,
+      maxAge: 0,
     });
+    return response;
   } catch (error) {
     if (error instanceof HttpError) {
       return Response.json(error.payload, {
