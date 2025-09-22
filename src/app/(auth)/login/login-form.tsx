@@ -35,13 +35,14 @@ export default function LoginForm() {
     setLoading(true);
     try {
       const result = await authApiRequest.login(values);
-      toast.success(`${result.payload.message}`);
 
       // Call Next server API to set sessionToken cookie (for using in server component)
       await authApiRequest.setSession({
         sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
       });
 
+      toast.success(`${result.payload.message}`);
       router.push("/me");
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });

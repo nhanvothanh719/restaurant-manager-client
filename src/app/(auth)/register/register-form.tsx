@@ -36,16 +36,18 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterBodyType) => {
-    if (loading) return
+    if (loading) return;
     setLoading(true);
     try {
       const result = await authApiRequest.register(values);
-      toast.success(`${result.payload.message}`);
 
       // Call Next server API to set sessionToken cookie (for using in server component)
       await authApiRequest.setSession({
         sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
       });
+
+      toast.success(`${result.payload.message}`);
       router.push("/me");
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });

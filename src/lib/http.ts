@@ -95,6 +95,7 @@ const request = async <Response>(
         });
         // Delete `sessionToken` value in Next client
         clientSessionToken.value = "";
+        clientSessionToken.expiresAt = new Date().toISOString();
         // Full-reload page
         location.href = "/login";
       } else {
@@ -118,9 +119,11 @@ const request = async <Response>(
     ) {
       // Set value for clientSessionToken when logging in or registering
       clientSessionToken.value = (payload as LoginResType).data.token;
+      clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
     } else if (normalizePath(url) === "auth/logout") {
       // Delete clientSessionToken value when logging out
       clientSessionToken.value = "";
+      clientSessionToken.expiresAt = new Date().toISOString();
     }
   }
 
@@ -160,10 +163,14 @@ export default http;
 
 class SessionToken {
   private token = "";
+  private _expiresAt = new Date().toISOString();
 
   // Getter
   get value() {
     return this.token;
+  }
+  get expiresAt() {
+    return this._expiresAt;
   }
 
   // Setter
@@ -173,6 +180,15 @@ class SessionToken {
       throw new Error("Session token cannot be set on server side");
     }
     this.token = token;
+  }
+  set expiresAt(expiresAt: string) {
+    if (!isClientComponent()) {
+      // Throw error if this method is called by server component
+      throw new Error(
+        "Expries at value of session token cannot be set on server side"
+      );
+    }
+    this._expiresAt = expiresAt;
   }
 }
 export const clientSessionToken = new SessionToken();
