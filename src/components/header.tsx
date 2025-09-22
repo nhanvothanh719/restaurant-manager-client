@@ -8,6 +8,9 @@ export default function Header() {
     <div>
       <ul>
         <li>
+          <Link href={"/products/add"}>Add product</Link>
+        </li>
+        <li>
           <Link href={"/login"}>Login</Link>
         </li>
         <li>
