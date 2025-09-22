@@ -1,4 +1,5 @@
 "use client";
+import authApiRequest from "@/apiRequest/auth";
 import { LoginBody, LoginBodyType } from "@/app/schemaValidations/auth.schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,13 +11,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clientEnvConfigData } from "@/config";
+import { handleApiError } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function LoginForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -26,48 +31,23 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (values: LoginBodyType) => {
+    if (loading) return;
+    setLoading(true);
     try {
-      const result = await fetch(
-        `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
-        {
-          method: "POST",
-          body: JSON.stringify(values),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          status: res.status,
-          payload,
-        };
-        if (!res.ok) {
-          // MEMO: This error will be caught in `catch` block
-          throw data;
-        }
-        return data;
+      const result = await authApiRequest.login(values);
+
+      // Call Next server API to set sessionToken cookie (for using in server component)
+      await authApiRequest.setSession({
+        sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
       });
 
       toast.success(`${result.payload.message}`);
-    } catch (err: any) {
-      console.error(err);
-
-      const errors = err.payload.errors as {
-        field: string;
-        message: string;
-      }[];
-      const status = err.status as number;
-      if (status === 422) {
-        errors.forEach((error) => {
-          form.setError(error.field as "email" | "password", {
-            type: "server",
-            message: error.message,
-          });
-        });
-      } else {
-        toast.error(`${err.payload.message}`);
-      }
+      router.push("/me");
+    } catch (error: any) {
+      handleApiError({ error, setError: form.setError });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,7 +88,7 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="!mt-5 w-full">
+        <Button type="submit" className="!mt-5 w-full" disabled={loading}>
           Login
         </Button>
       </form>

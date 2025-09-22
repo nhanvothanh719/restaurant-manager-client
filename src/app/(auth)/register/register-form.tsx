@@ -1,4 +1,5 @@
 "use client";
+import authApiRequest from "@/apiRequest/auth";
 import {
   RegisterBody,
   RegisterBodyType,
@@ -13,12 +14,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clientEnvConfigData } from "@/config";
+import { handleApiError } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function RegisterForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
@@ -30,17 +36,24 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterBodyType) => {
-    const result = await fetch(
-      `${clientEnvConfigData.NEXT_PUBLIC_API_ENDPOINT}/auth/register`,
-      {
-        method: "POST",
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    ).then((res) => res.json());
-    console.log(">>> Result: ", result);
+    if (loading) return;
+    setLoading(true);
+    try {
+      const result = await authApiRequest.register(values);
+
+      // Call Next server API to set sessionToken cookie (for using in server component)
+      await authApiRequest.setSession({
+        sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
+      });
+
+      toast.success(`${result.payload.message}`);
+      router.push("/me");
+    } catch (error: any) {
+      handleApiError({ error, setError: form.setError });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onSubmitError = (error: FieldErrors) => {
@@ -106,7 +119,7 @@ export default function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="!mt-5 w-full">
+        <Button type="submit" className="!mt-5 w-full" disabled={loading}>
           Register
         </Button>
       </form>
