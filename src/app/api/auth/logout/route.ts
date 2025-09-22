@@ -20,6 +20,8 @@ export async function POST(request: Request) {
       value: "",
       path: "/",
       httpOnly: true,
+      sameSite: "lax",
+      secure: true,
       maxAge: 0,
     });
     return response;
@@ -43,6 +45,8 @@ export async function POST(request: Request) {
       value: "",
       path: "/",
       httpOnly: true,
+      sameSite: "lax",
+      secure: true,
       maxAge: 0,
     });
     return response;
