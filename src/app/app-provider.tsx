@@ -1,29 +1,48 @@
 "use client";
 import { AccountResType } from "@/app/schemaValidations/account.schema";
-import { ReactNode, createContext, useContext, useState } from "react";
+import { USER } from "@/constants/localStorageKeys";
+import { useRouter } from "next/navigation";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type User = AccountResType["data"];
 
 const AppContext = createContext<{
   user: User | null;
   setUser: (user: User | null) => void;
-}>({ user: null, setUser: () => {} });
+  isAuthenticated: boolean;
+}>({ user: null, setUser: () => {}, isAuthenticated: false });
 export const useAppContext = () => {
   const context = useContext(AppContext);
   return context;
 };
 
-export default function AppProvider({
-  children,
-  user: userProp,
-}: {
-  children: ReactNode;
-  user: AccountResType["data"] | null;
-}) {
-  const [user, setUser] = useState<User | null>(userProp);
+export default function AppProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [user, setUserInState] = useState<User | null>(null);
 
+  useEffect(() => {
+    const savedUserInfo = localStorage.getItem(USER);
+    if (savedUserInfo) {
+      setUserInState(JSON.parse(savedUserInfo));
+    } else {
+      router.push("/login"); // Redirect if no user
+    }
+  }, [router, setUserInState]);
+
+  const setUser = (user: User | null) => {
+    setUserInState(user);
+    localStorage.setItem(USER, JSON.stringify(user));
+  };
+
+  const isAuthenticated = Boolean(user);
   return (
-    <AppContext.Provider value={{ user, setUser }}>
+    <AppContext.Provider value={{ user, setUser, isAuthenticated }}>
       {children}
     </AppContext.Provider>
   );

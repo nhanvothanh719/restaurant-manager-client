@@ -1,14 +1,12 @@
-import { AccountResType } from "@/app/schemaValidations/account.schema";
+"use client";
+import { useAppContext } from "@/app/app-provider";
 import ButtonLogout from "@/components/button-logout";
 import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 import React from "react";
 
-export default function Header({
-  user,
-}: {
-  user: AccountResType["data"] | null;
-}) {
+export default function Header() {
+  const { user } = useAppContext();
   return (
     <div>
       <ul className="flex gap-4">

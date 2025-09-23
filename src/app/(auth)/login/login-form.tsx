@@ -17,10 +17,12 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useAppContext } from "@/app/app-provider";
 
 export default function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { setUser } = useAppContext();
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -41,6 +43,8 @@ export default function LoginForm() {
         sessionToken: result.payload.data.token,
         expiresAt: result.payload.data.expiresAt,
       });
+
+      setUser(result.payload.data.account);
 
       toast.success(`${result.payload.message}`);
       router.push("/me");

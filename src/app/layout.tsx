@@ -6,9 +6,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AppProvider from "@/app/app-provider";
 import SlideSession from "@/components/slide-session";
-import { AccountResType } from "@/app/schemaValidations/account.schema";
-
-type User = AccountResType["data"];
 
 const interFont = Inter({
   subsets: ["vietnamese"],
@@ -27,9 +24,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // let user: User | null = null;
-  const user: User | null = null;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${interFont.className}`}>
@@ -40,8 +34,8 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Toaster />
-          <AppProvider user={user}>
-            <Header user={user} />
+          <AppProvider>
+            <Header />
             {children}
             <SlideSession />
           </AppProvider>

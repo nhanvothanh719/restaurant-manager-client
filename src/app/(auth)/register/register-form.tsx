@@ -1,5 +1,6 @@
 "use client";
 import authApiRequest from "@/apiRequest/auth";
+import { useAppContext } from "@/app/app-provider";
 import {
   RegisterBody,
   RegisterBodyType,
@@ -24,6 +25,7 @@ import { toast } from "sonner";
 export default function RegisterForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { setUser } = useAppContext();
 
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
@@ -46,6 +48,8 @@ export default function RegisterForm() {
         sessionToken: result.payload.data.token,
         expiresAt: result.payload.data.expiresAt,
       });
+
+      setUser(result.payload.data.account);
 
       toast.success(`${result.payload.message}`);
       router.push("/me");
