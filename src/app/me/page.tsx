@@ -1,7 +1,12 @@
 import accountApiRequest from "@/apiRequest/account";
 import ProfileForm from "@/app/me/profile-form";
+import { Metadata } from "next";
 import { cookies } from "next/headers";
 import React from "react";
+
+export const metadata: Metadata = {
+  title: "User profile", // User profile | My restaurant
+};
 
 // Server component
 export default async function CurrentUserProfilePage() {

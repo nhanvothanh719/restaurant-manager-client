@@ -1,19 +1,53 @@
 import productApiRequest from "@/apiRequest/product";
-import { Link } from "lucide-react";
+import { baseOpenGraphConfigs } from "@/app/shared-metadata";
+import { clientEnvConfigData } from "@/config";
+import { Metadata, ResolvingMetadata } from "next";
 import Image from "next/image";
-import React from "react";
+import React, { cache } from "react";
 
-export default async function ProductDetailsPage({
-  params,
-}: {
-  params: {
-    id: string;
+type Props = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+// MEMO: Sử dụng cache để ngăn chặn việc API giống nhau được gọi 2 lần
+// Thay vào đó gọi 1 lần rồi lưu kết quả vào cache
+const getProductDetails = cache(productApiRequest.getDetails);
+
+// MEMO: Function to generate page title using product name
+export async function generateMetadata(
+  { params, searchParams }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { payload } = await getProductDetails(Number(params.id));
+  const product = payload.data;
+  const appUrl = `${clientEnvConfigData.NEXT_PUBLIC_APPLICATION_URL}/products/${product.id}`;
+  return {
+    title: product.name,
+    description: product.description,
+    alternates: {
+      canonical: appUrl,
+    },
+    openGraph: {
+      ...baseOpenGraphConfigs,
+      title: product.name,
+      description: product.description,
+      url: appUrl,
+      siteName: "My restaurant",
+      images: [
+        {
+          url: product.image, // https://...
+        },
+      ],
+    },
   };
-}) {
+}
+
+export default async function ProductDetailsPage({ params }: Props) {
   let product = undefined;
   try {
     const { id } = params;
-    const { payload } = await productApiRequest.getDetails(Number(id));
+    const { payload } = await getProductDetails(Number(id));
     product = payload.data;
   } catch (error) {
     console.error(error);

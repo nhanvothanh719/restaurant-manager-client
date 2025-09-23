@@ -89,6 +89,7 @@ export default function ProductAddForm({ product }: { product?: Product }) {
       const result = await productApiRequest.update(Number(product.id), values);
 
       toast.success(`${result.payload.message}`);
+      router.refresh();
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });
     } finally {
