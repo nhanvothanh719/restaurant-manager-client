@@ -1,12 +1,10 @@
 "use client";
 import accountApiRequest from "@/apiRequest/account";
-import authApiRequest from "@/apiRequest/auth";
 import {
   AccountResType,
   UpdateMeBody,
   UpdateMeBodyType,
 } from "@/app/schemaValidations/account.schema";
-import { LoginBody, LoginBodyType } from "@/app/schemaValidations/auth.schema";
 import { Button } from "@/components/ui/button";
 import {
   Form,

@@ -1,5 +1,9 @@
 import { LoginResType } from "@/app/schemaValidations/auth.schema";
 import { clientEnvConfigData } from "@/config";
+import {
+  SESSION_TOKEN,
+  SESSION_TOKEN_EXPIRES_AT,
+} from "@/constants/localStorageKeys";
 import { isClientComponent, normalizePath } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
@@ -38,7 +42,7 @@ const request = async <Response>(
   url: string,
   options?: CustomOptions | undefined
 ) => {
-  let body = undefined;
+  let body: FormData | string | undefined = undefined;
   if (options?.body) {
     body =
       options?.body instanceof FormData
@@ -46,7 +50,7 @@ const request = async <Response>(
         : JSON.stringify(options.body);
   }
 
-  const baseHeaders: Record<string, string> =
+  const baseHeaders: { [key: string]: string } =
     method !== "GET" &&
     method !== "DELETE" &&
     !(options?.body instanceof FormData)
@@ -54,9 +58,10 @@ const request = async <Response>(
           "Content-Type": "application/json",
         }
       : {};
-  baseHeaders.Authorization = clientSessionToken.value
-    ? `Bearer ${clientSessionToken.value}`
-    : "";
+  if (isClientComponent()) {
+    const sessionToken = localStorage.getItem(SESSION_TOKEN);
+    baseHeaders.Authorization = sessionToken ? `Bearer ${sessionToken}` : "";
+  }
 
   // MEMO: Set url of the BE server as the default base url
   // MEMO: `options.baseUrl = ''` means call to the Next.js server
@@ -102,13 +107,13 @@ const request = async <Response>(
           },
         });
         // Delete `sessionToken` value in Next client
-        clientSessionToken.value = "";
-        clientSessionToken.expiresAt = new Date().toISOString();
+        localStorage.removeItem(SESSION_TOKEN);
+        localStorage.removeItem(SESSION_TOKEN_EXPIRES_AT);
         // Full-reload page
         location.href = "/login";
       } else {
         // Xử lý cho server component
-        // Bởi vì từ server component muốn gọi được BE server thì cần truyền Authorization vào header'
+        // Bởi vì từ server component muốn gọi được BE server thì cần truyền Authorization vào header
         const sessionToken = (options?.headers as any).Authorization.split(
           " "
         )[1];
@@ -126,15 +131,15 @@ const request = async <Response>(
       )
     ) {
       // Set value for clientSessionToken when logging in or registering
-      clientSessionToken.value = (payload as LoginResType).data.token;
-      clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
+      const { token, expiresAt } = (payload as LoginResType).data;
+      localStorage.setItem(SESSION_TOKEN, token);
+      localStorage.setItem(SESSION_TOKEN_EXPIRES_AT, expiresAt);
     } else if (normalizePath(url) === "auth/logout") {
       // Delete clientSessionToken value when logging out
-      clientSessionToken.value = "";
-      clientSessionToken.expiresAt = new Date().toISOString();
+      localStorage.removeItem(SESSION_TOKEN);
+      localStorage.removeItem(SESSION_TOKEN_EXPIRES_AT);
     }
   }
-
   return data;
 };
 
@@ -166,40 +171,7 @@ const http = {
     return request<Response>("DELETE", url, options);
   },
 };
-
 export default http;
-
-class SessionToken {
-  private token = "";
-  private _expiresAt = new Date().toISOString();
-
-  // Getter
-  get value() {
-    return this.token;
-  }
-  get expiresAt() {
-    return this._expiresAt;
-  }
-
-  // Setter
-  set value(token: string) {
-    if (!isClientComponent()) {
-      // Throw error if this method is called by server component
-      throw new Error("Session token cannot be set on server side");
-    }
-    this.token = token;
-  }
-  set expiresAt(expiresAt: string) {
-    if (!isClientComponent()) {
-      // Throw error if this method is called by server component
-      throw new Error(
-        "Expries at value of session token cannot be set on server side"
-      );
-    }
-    this._expiresAt = expiresAt;
-  }
-}
-export const clientSessionToken = new SessionToken();
 
 export class UnprocessableEntityError extends HttpError {
   status: 422;
