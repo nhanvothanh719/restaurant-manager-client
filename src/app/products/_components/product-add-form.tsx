@@ -47,6 +47,10 @@ export default function ProductAddForm({ product }: { product?: Product }) {
   const createProduct = async (values: CreateProductBodyType) => {
     setLoading(true);
     try {
+      if (!imgFile) {
+        toast.error("Please select an image");
+        return;
+      }
       const formData = new FormData();
       formData.append("file", imgFile as Blob);
       const uploadImageResult = await productApiRequest.uploadImage(formData);

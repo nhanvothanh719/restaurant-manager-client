@@ -20,7 +20,7 @@ export default function Header({
             <li>
               <ButtonLogout />
             </li>
-            <p>Welcome, {user.name}</p>
+            <span>Welcome, {user.name}</span>
           </>
         ) : (
           <>

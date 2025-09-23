@@ -31,8 +31,12 @@ export default async function RootLayout({
 
   let user: User | null = null;
   if (sessionToken) {
-    const data = await accountApiRequest.getMe(sessionToken.value || "");
-    user = data.payload.data;
+    try {
+      const data = await accountApiRequest.getMe(sessionToken.value || "");
+      user = data.payload?.data ?? null;
+    } catch {
+      user = null; // swallow 401/network errors
+    }
   }
 
   return (
