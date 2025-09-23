@@ -1,10 +1,16 @@
 import productApiRequest from "@/apiRequest/product";
 import DeleteButton from "@/app/products/_components/delete-button";
 import { Button } from "@/components/ui/button";
+import { Metadata } from "next";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+
+export const metadata: Metadata = {
+  title: "Products", // Products | My restaurant
+  description: "Products page for My restaurant",
+};
 
 export default async function ProductsPage() {
   const cookieStore = await cookies();
