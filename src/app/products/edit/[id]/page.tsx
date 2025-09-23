@@ -1,9 +1,8 @@
 import productApiRequest from "@/apiRequest/product";
-import { Link } from "lucide-react";
-import Image from "next/image";
+import ProductAddForm from "@/app/products/_components/product-add-form";
 import React from "react";
 
-export default async function ProductDetailsPage({
+export default async function ProductEditPage({
   params,
 }: {
   params: {
@@ -29,17 +28,8 @@ export default async function ProductDetailsPage({
 
   return (
     <div>
-      <h3>Product: {product.name}</h3>
-      <div key={product.id} className="flex flex-col gap-4">
-        <Image
-          src={product.image}
-          width={200}
-          height={200}
-          alt={product.name}
-        />
-        <p>{product.name}</p>
-        <p>${product.price}</p>
-      </div>
+      <h3>{product.name}</h3>
+      <ProductAddForm product={product} />
     </div>
   );
 }
