@@ -1,4 +1,6 @@
 import productApiRequest from "@/apiRequest/product";
+import { baseOpenGraphConfigs } from "@/app/shared-metadata";
+import { clientEnvConfigData } from "@/config";
 import { Metadata, ResolvingMetadata } from "next";
 import Image from "next/image";
 import React, { cache } from "react";
@@ -19,9 +21,25 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { payload } = await getProductDetails(Number(params.id));
   const product = payload.data;
+  const appUrl = `${clientEnvConfigData.NEXT_PUBLIC_APPLICATION_URL}/products/${product.id}`;
   return {
     title: product.name,
     description: product.description,
+    alternates: {
+      canonical: appUrl,
+    },
+    openGraph: {
+      ...baseOpenGraphConfigs,
+      title: product.name,
+      description: product.description,
+      url: appUrl,
+      siteName: "My restaurant",
+      images: [
+        {
+          url: product.image, // https://...
+        },
+      ],
+    },
   };
 }
 
