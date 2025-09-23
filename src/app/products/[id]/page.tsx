@@ -1,7 +1,7 @@
 import productApiRequest from "@/apiRequest/product";
 import { baseOpenGraphConfigs } from "@/app/shared-metadata";
 import { clientEnvConfigData } from "@/config";
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 import Image from "next/image";
 import React, { cache } from "react";
 
@@ -15,10 +15,7 @@ type Props = {
 const getProductDetails = cache(productApiRequest.getDetails);
 
 // MEMO: Function to generate page title using product name
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { payload } = await getProductDetails(Number(params.id));
   const product = payload.data;
   const appUrl = `${clientEnvConfigData.NEXT_PUBLIC_APPLICATION_URL}/products/${product.id}`;

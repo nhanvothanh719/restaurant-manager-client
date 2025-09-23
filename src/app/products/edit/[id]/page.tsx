@@ -1,6 +1,6 @@
 import productApiRequest from "@/apiRequest/product";
 import ProductAddForm from "@/app/products/_components/product-add-form";
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 import React, { cache } from "react";
 
 type Props = {
@@ -13,10 +13,7 @@ type Props = {
 const getProductDetails = cache(productApiRequest.getDetails);
 
 // MEMO: Function to generate page title using product name
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { payload } = await getProductDetails(Number(params.id));
   const product = payload.data;
   return {

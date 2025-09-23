@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 // POST: /api/auth/slide-session
-export async function POST(request: Request) {
+export async function POST() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken");
 

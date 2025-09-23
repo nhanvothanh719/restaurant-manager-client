@@ -1,8 +1,7 @@
 import productApiRequest from "@/apiRequest/product";
-import DeleteButton from "@/app/products/_components/delete-button";
-import { Button } from "@/components/ui/button";
+import ProductAddButton from "@/app/products/_components/product-add-button";
+import ProductEditButton from "@/app/products/_components/product-edit-button";
 import { Metadata } from "next";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -13,22 +12,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ProductsPage() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("sessionToken");
-  const isAuthenticated = !!sessionToken;
-
   const { payload } = await productApiRequest.getList();
   const productsList = payload.data;
 
   return (
     <div>
-      {isAuthenticated && (
-        <Link href={"/products/add"}>
-          <Button type="button" variant={"secondary"}>
-            Add product
-          </Button>
-        </Link>
-      )}
+      <ProductAddButton />
       <h3>Products List</h3>
       <div className="space-y-5">
         {productsList.map((product) => (
@@ -43,16 +32,7 @@ export default async function ProductsPage() {
             </Link>
             <p>{product.name}</p>
             <p>${product.price}</p>
-            {isAuthenticated && (
-              <div className="flex space-x-2">
-                <Link href={`/products/edit/${product.id}`}>
-                  <Button type="button" variant={"link"}>
-                    Edit
-                  </Button>
-                </Link>
-                <DeleteButton product={product} />
-              </div>
-            )}
+            <ProductEditButton product={product} />
           </div>
         ))}
       </div>

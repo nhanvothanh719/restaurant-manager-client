@@ -1,12 +1,13 @@
 "use client";
 import { AccountResType } from "@/app/schemaValidations/account.schema";
-import { clientSessionToken } from "@/lib/http";
-import { isClientComponent } from "@/lib/utils";
+import { USER } from "@/constants/localStorageKeys";
+import { useRouter } from "next/navigation";
 import {
   ReactNode,
-  useLayoutEffect,
   createContext,
+  useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -15,32 +16,37 @@ type User = AccountResType["data"];
 const AppContext = createContext<{
   user: User | null;
   setUser: (user: User | null) => void;
-}>({ user: null, setUser: () => {} });
+  isAuthenticated: boolean;
+}>({ user: null, setUser: () => {}, isAuthenticated: false });
 export const useAppContext = () => {
   const context = useContext(AppContext);
   return context;
 };
 
-export default function AppProvider({
-  children,
-  initialSessionToken = "",
-  user: userProp,
-}: {
-  children: ReactNode;
-  initialSessionToken?: string;
-  user: AccountResType["data"] | null;
-}) {
-  const [user, setUser] = useState<User | null>(userProp);
+export default function AppProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [user, setUserInState] = useState<User | null>(null);
 
-  useLayoutEffect(() => {
-    // MEMO: Only reassigning value in client component
-    if (isClientComponent()) {
-      clientSessionToken.value = initialSessionToken;
+  useEffect(() => {
+    const savedUserInfo = localStorage.getItem(USER);
+    if (savedUserInfo) {
+      setUserInState(JSON.parse(savedUserInfo));
+    } else {
+      router.push("/login"); // Redirect if no user
     }
-  }, [initialSessionToken]);
+  }, [router, setUserInState]);
 
+  const setUser = useCallback(
+    (user: User | null) => {
+      setUserInState(user);
+      localStorage.setItem(USER, JSON.stringify(user));
+    },
+    [setUserInState]
+  );
+
+  const isAuthenticated = Boolean(user);
   return (
-    <AppContext.Provider value={{ user, setUser }}>
+    <AppContext.Provider value={{ user, setUser, isAuthenticated }}>
       {children}
     </AppContext.Provider>
   );

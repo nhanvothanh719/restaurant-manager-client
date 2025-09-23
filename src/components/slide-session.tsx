@@ -1,6 +1,6 @@
 "use client";
 import authApiRequest from "@/apiRequest/auth";
-import { clientSessionToken } from "@/lib/http";
+import { SESSION_TOKEN_EXPIRES_AT } from "@/constants/localStorageKeys";
 import { differenceInHours } from "date-fns";
 import { useEffect } from "react";
 
@@ -8,11 +8,19 @@ export default function SlideSession() {
   useEffect(() => {
     const slideSessionInterval = setInterval(async () => {
       const now = new Date();
-      const expiresAt = new Date(clientSessionToken.expiresAt);
+      const sessionTokenExpiresAt = localStorage.getItem(
+        SESSION_TOKEN_EXPIRES_AT
+      );
+      const expiresAt = sessionTokenExpiresAt
+        ? new Date(sessionTokenExpiresAt)
+        : new Date();
       if (differenceInHours(expiresAt, now) < 1) {
         const res =
           await authApiRequest.slideSessionFromNextClientToNextServer();
-        clientSessionToken.expiresAt = res.payload.data.expiresAt;
+        localStorage.setItem(
+          SESSION_TOKEN_EXPIRES_AT,
+          res.payload.data.expiresAt
+        );
       }
     }, 1000 * 60 * 60);
     return () => clearInterval(slideSessionInterval);
