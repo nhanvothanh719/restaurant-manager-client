@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ReactNode,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -35,10 +36,13 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [router, setUserInState]);
 
-  const setUser = (user: User | null) => {
-    setUserInState(user);
-    localStorage.setItem(USER, JSON.stringify(user));
-  };
+  const setUser = useCallback(
+    (user: User | null) => {
+      setUserInState(user);
+      localStorage.setItem(USER, JSON.stringify(user));
+    },
+    [setUserInState]
+  );
 
   const isAuthenticated = Boolean(user);
   return (
