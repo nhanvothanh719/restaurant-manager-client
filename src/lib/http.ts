@@ -38,10 +38,18 @@ const request = async <Response>(
   url: string,
   options?: CustomOptions | undefined
 ) => {
-  const body = options?.body ? JSON.stringify(options.body) : undefined;
+  let body = undefined;
+  if (options?.body) {
+    body =
+      options?.body instanceof FormData
+        ? options.body
+        : JSON.stringify(options.body);
+  }
 
   const baseHeaders: Record<string, string> =
-    method !== "GET" && method !== "DELETE"
+    method !== "GET" &&
+    method !== "DELETE" &&
+    !(options?.body instanceof FormData)
       ? {
           "Content-Type": "application/json",
         }

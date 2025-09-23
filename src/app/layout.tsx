@@ -4,9 +4,13 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import AppProvider from "@/app/AppProvider";
+import AppProvider from "@/app/app-provider";
 import { cookies } from "next/headers";
 import SlideSession from "@/components/slide-session";
+import accountApiRequest from "@/apiRequest/account";
+import { AccountResType } from "@/app/schemaValidations/account.schema";
+
+type User = AccountResType["data"];
 
 const interFont = Inter({
   subsets: ["vietnamese"],
@@ -25,6 +29,16 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken");
 
+  let user: User | null = null;
+  if (sessionToken) {
+    try {
+      const data = await accountApiRequest.getMe(sessionToken.value || "");
+      user = data.payload?.data ?? null;
+    } catch {
+      user = null; // swallow 401/network errors
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${interFont.className}`}>
@@ -34,9 +48,9 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
           <Toaster />
-          <AppProvider initialSessionToken={sessionToken?.value}>
+          <AppProvider initialSessionToken={sessionToken?.value} user={user}>
+            <Header user={user} />
             {children}
             <SlideSession />
           </AppProvider>

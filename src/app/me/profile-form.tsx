@@ -1,5 +1,11 @@
 "use client";
+import accountApiRequest from "@/apiRequest/account";
 import authApiRequest from "@/apiRequest/auth";
+import {
+  AccountResType,
+  UpdateMeBody,
+  UpdateMeBodyType,
+} from "@/app/schemaValidations/account.schema";
 import { LoginBody, LoginBodyType } from "@/app/schemaValidations/auth.schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,32 +24,27 @@ import React, { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export default function LoginForm() {
+type Profile = AccountResType["data"];
+
+export default function ProfileForm({ profile }: { profile: Profile }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<LoginBodyType>({
-    resolver: zodResolver(LoginBody),
+  const form = useForm<UpdateMeBodyType>({
+    resolver: zodResolver(UpdateMeBody),
     defaultValues: {
-      email: "",
-      password: "",
+      name: profile.name,
     },
   });
 
-  const onSubmit = async (values: LoginBodyType) => {
+  const onSubmit = async (values: UpdateMeBodyType) => {
     if (loading) return;
     setLoading(true);
     try {
-      const result = await authApiRequest.login(values);
-
-      // Call Next server API to set sessionToken cookie (for using in server component)
-      await authApiRequest.setSession({
-        sessionToken: result.payload.data.token,
-        expiresAt: result.payload.data.expiresAt,
-      });
+      const result = await accountApiRequest.updateMe(values);
 
       toast.success(`${result.payload.message}`);
-      router.push("/me");
+      // Refresh current page
       router.refresh();
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });
@@ -63,34 +64,29 @@ export default function LoginForm() {
         className="space-y-2 max-w-[400px] w-full"
         onSubmit={form.handleSubmit(onSubmit, (error) => onSubmitError(error))}
       >
+        <FormItem>
+          <FormLabel>Email</FormLabel>
+          <FormControl>
+            <Input type="email" value={profile.email} readOnly />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+
         <FormField
           control={form.control}
-          name="email"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input type="password" {...field} />
+                <Input type="text" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="!mt-5 w-full" disabled={loading}>
-          Login
+          Update
         </Button>
       </form>
     </Form>

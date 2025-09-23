@@ -27,10 +27,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/me", request.url));
   }
 
+  const productEditPageUrlRegex = /^\/products\/edit\/\d+$/;
+  if (pathname.match(productEditPageUrlRegex) && !sessionToken) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   return NextResponse.next();
 }
 
 // All routes that this middleware applies
 export const config = {
-  matcher: ["/login", "/register", "/me"],
+  matcher: ["/login", "/register", "/me", "/products/:path*"],
 };

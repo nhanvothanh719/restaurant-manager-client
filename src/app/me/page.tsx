@@ -1,5 +1,5 @@
 import accountApiRequest from "@/apiRequest/account";
-import Profile from "@/app/me/profile";
+import ProfileForm from "@/app/me/profile-form";
 import { cookies } from "next/headers";
 import React from "react";
 
@@ -19,7 +19,7 @@ export default async function CurrentUserProfilePage() {
           <p>Name: {result.payload.data.name}</p>
         </li>
       </ul>
-      {/* <Profile /> */}
+      <ProfileForm profile={result.payload.data} />
     </div>
   );
 }
