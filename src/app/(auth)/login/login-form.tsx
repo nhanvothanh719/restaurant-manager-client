@@ -44,6 +44,7 @@ export default function LoginForm() {
 
       toast.success(`${result.payload.message}`);
       router.push("/me");
+      router.refresh();
     } catch (error: any) {
       handleApiError({ error, setError: form.setError });
     } finally {
